@@ -11,44 +11,50 @@
 #include <QJsonDocument>
 #include <QtCharts/QBarSeries>
 #include <QtCharts/QBarSet>
+#include <QtCharts>
 #include "data.h"
+#include "ioccontainer.h"
 
-// Потом удалить
-typedef QPair<QPointF, QString> Data;
-typedef QList<Data> DataList;
-typedef QList<DataList> DataTable;
+// Интерфейс IOC контейнера для отрисовки Диаграммы
+// У нас есть ф-ия drawChart, которая отрисовывает Диаграммы
+// И мы можем отдельно написать drawChart для какого-нибудь нового типа Диаграмм, не изменяя IChartDrawing
+class IChartDrawing
+{
+public:
+    virtual void drawChart(QVector <DataStorage> data, bool isColored = true, QChart* chart_ = new QChart()) = 0;
+};
 
-QT_CHARTS_BEGIN_NAMESPACE
-class QChartView;
-class QChart;
-QT_CHARTS_END_NAMESPACE
+// Отрисовка Вертикальных Диаграмм
+class barChartDrawing : public IChartDrawing
+{
+public:
+    virtual void drawChart(QVector <DataStorage> data, bool isColored = true, QChart* chart_= new QChart()); // Параметры по умолчанию: Цветная
+};
 
-QT_CHARTS_USE_NAMESPACE
+// Отрисовка Круговых Диаграмм
+class pieChartDrawing : public IChartDrawing
+{
+public:
+    virtual void drawChart(QVector <DataStorage> data, bool isColored = true, QChart* chart_= new QChart()); // Параметры по умолчанию: Цветная
+};
 
+// Класс для работы с Диаграммами
 class Charts
 {
 public:
-    Charts();
-    QChart *createBarChartNew (QVector <DataStorage>, bool isColored); // НОВАЯ ФУНКЦИЯ ДЛЯ BARCHART
-    QChart *createPieChartNew (QVector<DataStorage> data, bool isColored); // НОВАЯ ФУНКЦИЯ ДЛЯ PIECHART
-    QChart *createBarChart(int valueCount) const; // Потом удалить
+    Charts(): chart_( new QChart()), isColored_ (true){} // Задаём параметры по умолчанию
 
-    void drawChart(const DataStorage& data);
-    void reDrawChart() const;
+    QChart* getChart(); // Геттер для получения QT класса QChart
 
-    QChart *chart_; // ChartParametrs
-    QVector <DataStorage> data_;// ChartParametrs
+    void updateData(const QString& filePath); // Ф-ия обновления данных
+    void reDrawChart() const; // Ф-ия перерисовки Диаграммы
+    void changeColor(); // Ф-ия смены цвета
 
 private:
-    DataTable generateRandomData(int listCount, int valueMax, int valueCount) const; // Потом удалить
 
-
-
-    QPieSeries *series;
-
-    // Потом удалить
-    DataTable m_dataTable;
-
+    QChart *chart_; // Для работы с диаграммами
+    QVector <DataStorage> data_; // Переменная хранящая key (ключ данных, дата-время) и value (значение данных) из наших таблиц
+    bool isColored_; // Переменная определяющая цвет Диаграммы
 };
 
 #endif // CHARTS_H
