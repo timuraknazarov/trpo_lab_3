@@ -6,7 +6,6 @@ QT += charts
 
 CONFIG += c++11
 
-
 SOURCES += \
     charts.cpp \
     data.cpp \
